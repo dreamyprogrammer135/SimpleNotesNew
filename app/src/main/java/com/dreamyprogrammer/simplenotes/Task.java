@@ -3,12 +3,22 @@ package com.dreamyprogrammer.simplenotes;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import java.util.Date;
+import androidx.annotation.NonNull;
 
 public class Task implements Parcelable {
+    public static final Creator<Task> CREATOR = new Creator<Task>() {
+        @Override
+        public Task createFromParcel(Parcel in) {
+            return new Task(in);
+        }
+
+        @Override
+        public Task[] newArray(int size) {
+            return new Task[size];
+        }
+    };
     private String id;
     private String name;
-    private Date createDate;
     private String note;
     private Integer delete;
 
@@ -23,17 +33,9 @@ public class Task implements Parcelable {
         }
     }
 
-    public static final Creator<Task> CREATOR = new Creator<Task>() {
-        @Override
-        public Task createFromParcel(Parcel in) {
-            return new Task(in);
-        }
-
-        @Override
-        public Task[] newArray(int size) {
-            return new Task[size];
-        }
-    };
+    public Task(String name) {
+        this.name = name;
+    }
 
     @Override
     public int describeContents() {
@@ -51,5 +53,11 @@ public class Task implements Parcelable {
             parcel.writeByte((byte) 1);
             parcel.writeInt(delete);
         }
+    }
+
+    @NonNull
+    @Override
+    public String toString() {
+        return name;
     }
 }
