@@ -1,64 +1,64 @@
 package com.dreamyprogrammer.simplenotes;
 
 import android.os.Bundle;
-
-import androidx.fragment.app.Fragment;
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.LinearLayout;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link ListNotesFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+
 public class ListNotesFragment extends Fragment {
-
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
-
-    public ListNotesFragment() {
-        // Required empty public constructor
-    }
-
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment ListNotesFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static ListNotesFragment newInstance(String param1, String param2) {
-        ListNotesFragment fragment = new ListNotesFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
-    }
+    private final Task task1 = new Task("Разобраться с фрагментами");
+    private final Task task2 = new Task("Купить велосипед");
+    private final Task task3 = new Task("Поиграть с детьми");
+    private final Task task4 = new Task("Разобрать в шкафу");
+    private final Task task5 = new Task("Сделать грядки");
+    private LinearLayout linearList;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_list_notes, container, false);
+
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        findView(view);
+        setupView();
+    }
+
+    private void findView(View view) {
+        linearList = view.findViewById(R.id.linear_list);
+    }
+
+    private void setupView() {
+        setupRecyclerView();
+    }
+
+    private void setupRecyclerView() {
+        addTask(task1);
+        addTask(task2);
+        addTask(task3);
+        addTask(task4);
+        addTask(task5);
+
+    }
+
+    private void addTask(Task task) {
+        Button button = new Button(getContext());
+        button.setText(task.toString());
+        button.setOnClickListener(v -> ((Controller) getActivity()).openNotes(task));
+        linearList.addView(button);
+    }
+
+
+    interface Controller {
+        void openNotes(Task task);
     }
 }
