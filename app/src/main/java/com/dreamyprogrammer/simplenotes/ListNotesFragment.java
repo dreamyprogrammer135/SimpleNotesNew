@@ -1,64 +1,102 @@
 package com.dreamyprogrammer.simplenotes;
 
+import android.content.Context;
 import android.os.Bundle;
-
-import androidx.fragment.app.Fragment;
-
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link ListNotesFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+
+import java.util.ArrayList;
+import java.util.List;
+
 public class ListNotesFragment extends Fragment {
+    private final ArrayList<Task> taskList = new ArrayList<>();
+    private RecyclerView recyclerView;
+    private TaskAdapter adapter;
+    private BottomNavigationView bottomNavigationView;
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
-
-    public ListNotesFragment() {
-        // Required empty public constructor
-    }
-
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment ListNotesFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static ListNotesFragment newInstance(String param1, String param2) {
-        ListNotesFragment fragment = new ListNotesFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.fragment_list_notes, container, false);
     }
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        findView(view);
+        setupView();
+    }
+
+    @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+        if (!(context instanceof Contract)) {
+            throw new IllegalStateException(getString(R.string.erroe_contract));
         }
     }
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_list_notes, container, false);
+    private void findView(View view) {
+        //получили recycler_view
+        recyclerView = view.findViewById(R.id.recycler_view);
+        bottomNavigationView = view.findViewById(R.id.nav_view);
+        bottomNavigationView.setOnNavigationItemSelectedListener(this::navigate);
+
+    }
+
+    private void setupView() {
+        setupRecyclerView();
+    }
+
+    private void setupRecyclerView() {
+        adapter = new TaskAdapter();
+        adapter.setOnItemClickListener(item -> getContract().openTask(item));
+        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        recyclerView.setAdapter(adapter);
+        addTaskList(taskList);
+        //после получения recycler_view сунули туда адаптер
+    }
+
+    private boolean navigate(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.item_task: {
+                getContract().createTask();
+            }
+            break;
+            default:
+                return true;
+        }
+        return true;
+    }
+
+    private Contract getContract() {
+        return (Contract) getActivity();
+    }
+
+
+    private void addTaskList(List<Task> taskList) {
+        adapter.setData(taskList);
+    }
+
+
+    public void addTask(Task task) {
+        if (task != null) {
+            taskList.add(task);
+        }
+        addTaskList(taskList);
+    }
+
+
+    interface Contract {
+        void createTask();
+
+        void openTask(Task task);
     }
 }

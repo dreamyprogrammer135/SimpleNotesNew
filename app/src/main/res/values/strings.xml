@@ -6,4 +6,7 @@
     <string name="task">Task</string>
 
     <string name="save">Save</string>
+
+    <string name="error_implement_controller" translatable="false">Activity must implement ProfileListFragment.Controller</string>
+    <string name="erroe_contract">Activity must implement Contract</string>
 </resources>
