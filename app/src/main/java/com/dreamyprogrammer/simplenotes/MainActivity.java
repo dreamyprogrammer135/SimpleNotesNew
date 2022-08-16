@@ -2,24 +2,30 @@ package com.dreamyprogrammer.simplenotes;
 
 import android.os.Bundle;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
-public class MainActivity extends AppCompatActivity implements ListNotesFragment.Controller, EditListNoteFragment.Controller {
+public class MainActivity extends AppCompatActivity implements ListNotesFragment.Contract, EditListNoteFragment.Contract {
+    private static final String NOTES_LIST_FRAGMENT_TAG = "NOTES_LIST_FRAGMENT_TAG";
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        getSupportFragmentManager()
-                .beginTransaction()
-                .replace(R.id.container, new ListNotesFragment())
-                .commit();
-
+        setView();
     }
 
-    @Override
-    public void openNotes(Task task) {
+    private void setView() {
+        getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.container, new ListNotesFragment(), NOTES_LIST_FRAGMENT_TAG)
+                .commit();
+    }
+
+    private void showEditTask(@Nullable Task task) {
+        setTitle(task == null ? "Создание заметки" : "Редактируем заметку");
         getSupportFragmentManager()
                 .beginTransaction()
                 .replace(R.id.container, EditListNoteFragment.newInstance(task))
@@ -28,9 +34,22 @@ public class MainActivity extends AppCompatActivity implements ListNotesFragment
     }
 
     @Override
+    public void createTask() {
+        showEditTask(null);
+    }
+
+    @Override
+    public void openTask(Task task) {
+        showEditTask(task);
+    }
+
+    @Override
     public void saveNotes(Task task) {
-        //todo Будет нужно когда инфу буду прокидывать в обе стороны.
-        // пока думаю что куда вообще будет прокидываться.
+        setTitle(R.string.app_name);
+        getSupportFragmentManager().popBackStack();
+        ListNotesFragment listNotesFragment = (ListNotesFragment) getSupportFragmentManager().findFragmentByTag(NOTES_LIST_FRAGMENT_TAG);
+        assert listNotesFragment != null;
+        listNotesFragment.addTask(task);
     }
 
 }

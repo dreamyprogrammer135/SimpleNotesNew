@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.EditText;
 
 import androidx.annotation.NonNull;
@@ -16,6 +17,7 @@ public class EditListNoteFragment extends Fragment {
     private static final String TASK_ELEMENT_ARGS_KEY = "TASK_ELEMENT_ARGS_KEY";
     private EditText editTextNotes;
     private Task task;
+    private Button saveButton;
 
 
     public static EditListNoteFragment newInstance(Task task) {
@@ -45,17 +47,29 @@ public class EditListNoteFragment extends Fragment {
     }
 
     private void setView() {
-        editTextNotes.setText(task.toString());
+        if (task != null) {
+            editTextNotes.setText(task.toString());
+            saveButton.setOnClickListener(v -> {
+                task.setName(editTextNotes.getText().toString());
+                getContract().saveNotes(null);
+            });
+        } else {
+            saveButton.setOnClickListener(v -> {
+                getContract().saveNotes(new Task(editTextNotes.getText().toString()));
+            });
+        }
+
     }
 
     private void findView(View view) {
         editTextNotes = view.findViewById(R.id.edit_text_notes);
+        saveButton = view.findViewById(R.id.save_button);
     }
 
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
-        if (!(context instanceof Controller)) {
+        if (!(context instanceof Contract)) {
             throw new RuntimeException(getString(R.string.error_implement_controller));
         }
         if (getArguments() != null) {
@@ -63,7 +77,12 @@ public class EditListNoteFragment extends Fragment {
         }
     }
 
-    interface Controller {
+
+    private Contract getContract() {
+        return (Contract) getActivity();
+    }
+
+    interface Contract {
         void saveNotes(Task task);
     }
 

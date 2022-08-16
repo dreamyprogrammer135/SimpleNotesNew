@@ -1,40 +1,54 @@
 package com.dreamyprogrammer.simplenotes;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.LinearLayout;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class ListNotesFragment extends Fragment {
-    private final Task task1 = new Task("Разобраться с фрагментами");
-    private final Task task2 = new Task("Купить велосипед");
-    private final Task task3 = new Task("Поиграть с детьми");
-    private final Task task4 = new Task("Разобрать в шкафу");
-    private final Task task5 = new Task("Сделать грядки");
-    private LinearLayout linearList;
+    private final ArrayList<Task> taskList = new ArrayList<>();
+    private RecyclerView recyclerView;
+    private TaskAdapter adapter;
+    private BottomNavigationView bottomNavigationView;
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_list_notes, container, false);
-
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
         findView(view);
         setupView();
     }
 
+    @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+        if (!(context instanceof Contract)) {
+            throw new IllegalStateException(getString(R.string.erroe_contract));
+        }
+    }
+
     private void findView(View view) {
-        linearList = view.findViewById(R.id.linear_list);
+        //получили recycler_view
+        recyclerView = view.findViewById(R.id.recycler_view);
+        bottomNavigationView = view.findViewById(R.id.nav_view);
+        bottomNavigationView.setOnNavigationItemSelectedListener(this::navigate);
+
     }
 
     private void setupView() {
@@ -42,23 +56,47 @@ public class ListNotesFragment extends Fragment {
     }
 
     private void setupRecyclerView() {
-        addTask(task1);
-        addTask(task2);
-        addTask(task3);
-        addTask(task4);
-        addTask(task5);
-
+        adapter = new TaskAdapter();
+        adapter.setOnItemClickListener(item -> getContract().openTask(item));
+        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        recyclerView.setAdapter(adapter);
+        addTaskList(taskList);
+        //после получения recycler_view сунули туда адаптер
     }
 
-    private void addTask(Task task) {
-        Button button = new Button(getContext());
-        button.setText(task.toString());
-        button.setOnClickListener(v -> ((Controller) getActivity()).openNotes(task));
-        linearList.addView(button);
+    private boolean navigate(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.item_task: {
+                getContract().createTask();
+            }
+            break;
+            default:
+                return true;
+        }
+        return true;
+    }
+
+    private Contract getContract() {
+        return (Contract) getActivity();
     }
 
 
-    interface Controller {
-        void openNotes(Task task);
+    private void addTaskList(List<Task> taskList) {
+        adapter.setData(taskList);
+    }
+
+
+    public void addTask(Task task) {
+        if (task != null) {
+            taskList.add(task);
+        }
+        addTaskList(taskList);
+    }
+
+
+    interface Contract {
+        void createTask();
+
+        void openTask(Task task);
     }
 }
